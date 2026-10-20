@@ -9,3 +9,12 @@
 - Текст лицензии собран из `adapto-frappe/LICENSE.md` без раздела вопросов юристу.
 
 Посмотреть локально: `python3 -m http.server -d . 8000`.
+
+## Выкладка
+
+Хостинг ps.kz (Plesk, сервер `srv-plesk63.ps.kz`), папка сайта — `httpdocs` подписки `adapto.kz`. Там же лежит `SakenGPT_bot` — его не трогать; в домашней папке подписки ещё `altyncore.kz`.
+
+1. `git archive --format=zip -o adapto-site.zip HEAD -- '*.html' kk assets .htaccess`
+2. Plesk → Файлы → `httpdocs` → «Добавить новый» → «Загрузить файл».
+3. Архив → «Извлечь файлы» с «Заменить существующие файлы».
+4. Удалить `adapto-site.zip` из `httpdocs`: иначе его можно скачать.
