@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Uploads the committed site to adapto.kz over FTPS and checks the live pages.
+#   bin/deploy
+# The FTP password comes from the macOS keychain, saved once by the owner:
+#   security add-generic-password -s adapto-site-ftp -a adaptokz -w
+# Only the site's own files are sent; nothing on the server is deleted (httpdocs also holds SakenGPT_bot).
+# A page removed from the repository stays on the server until it is deleted in Plesk.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+HOST=srv-plesk63.ps.kz
+USER_NAME=adaptokz
+TARGET=httpdocs
+SITE=https://adapto.kz
+
+[ -z "$(git status --porcelain)" ] || { echo "Uncommitted changes: commit first, the deploy sends HEAD." >&2; exit 1; }
+password=$(security find-generic-password -s adapto-site-ftp -a "$USER_NAME" -w 2>/dev/null) || {
+  echo "No FTP password in the keychain. Save it once:" >&2
+  echo "  security add-generic-password -s adapto-site-ftp -a $USER_NAME -w" >&2
+  exit 1
+}
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+netrc=$work/netrc
+( umask 077; printf 'machine %s login %s password %s\n' "$HOST" "$USER_NAME" "$password" > "$netrc" )
+unset password
+mkdir "$work/site"
+git archive HEAD -- '*.html' kk assets .htaccess install.sh | tar -x -C "$work/site"
+
+cd "$work/site"
+count=0
+while IFS= read -r file; do
+  curl -sS --ssl-reqd --netrc-file "$netrc" --ftp-create-dirs -T "$file" "ftp://$HOST/$TARGET/$file"
+  count=$((count + 1))
+done < <(find . -type f | sed 's|^\./||' | sort)
+echo "Uploaded $count files to $HOST:$TARGET"
+
+# Every page and every file it links to answers 200; install.sh on the site is the committed one.
+failed=0
+check() {
+  local code
+  code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE$1")
+  [ "$code" = 200 ] || { echo "  $1 -> $code" >&2; failed=1; }
+}
+for page in / /science /demo /install /license /services /kk/ /kk/science /kk/demo /kk/install /kk/license /kk/services \
+            /assets/site.css /assets/inter.woff2 /assets/overview.png /assets/logo.svg; do
+  check "$page"
+done
+[ "$(curl -s "$SITE/install.sh" | shasum -a 256 | cut -d' ' -f1)" = "$(shasum -a 256 install.sh | cut -d' ' -f1)" ] \
+  || { echo "  /install.sh differs from the committed one" >&2; failed=1; }
+[ "$failed" = 0 ] && echo "Live check: all pages answer, install.sh matches" || { echo "Live check failed" >&2; exit 1; }

@@ -10,6 +10,13 @@ RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
+# Builds: /download/<key>/latest, /download/<key>/v0.26.0 (the package) and /download/<key>/v0.26.0/SHA256SUMS
+# lead to the GitHub releases. No ".tar" in our addresses: nginx would serve that extension itself.
+# <key> is any label from our letter; it only shows in the access log, so we see who downloaded.
+RewriteRule ^download/[A-Za-z0-9_-]+/latest$ https://github.com/AltynCore/adapto-os/releases/latest [R=302,L]
+RewriteRule ^download/[A-Za-z0-9_-]+/v([0-9]+\.[0-9]+\.[0-9]+)$ https://github.com/AltynCore/adapto-os/releases/download/v$1/adapto-os-$1.tar [R=302,L]
+RewriteRule ^download/[A-Za-z0-9_-]+/v([0-9]+\.[0-9]+\.[0-9]+)/SHA256SUMS$ https://github.com/AltynCore/adapto-os/releases/download/v$1/SHA256SUMS [R=302,L]
+
 # Old addresses with .html and index lead to the clean ones: /index.html -> /, /kk/index -> /kk/, /demo.html -> /demo
 RewriteCond %{THE_REQUEST} \s/+((?:[^\s?]*/)?)index(?:\.html)?[\s?] [NC]
 RewriteRule ^ /%1 [R=301,L]

@@ -27,8 +27,10 @@
 <main class="wrap">
   <section class="page-head">
     <h1>Установка</h1>
-    <p class="lead">Adapto OS устанавливается на ваш сервер из одного пакета. Интернет для установки не нужен: пакет содержит все необходимые программы, включая Docker.</p>
-    <p class="muted">Каждая организация получает от нас пакет установки, лицензию и доступ к исходному коду. Обновления также передаём напрямую. Запросить пакет: <a href="mailto:info@altyncore.kz">info@altyncore.kz</a>.</p>
+    <p class="lead">Adapto OS ставится на ваш сервер одной командой:</p>
+    <pre><code>curl -fsSL https://adapto.kz/install.sh | sudo bash</code></pre>
+    <p class="muted">Команда скачивает последнюю сборку, сверяет контрольную сумму и ставит систему в <code>/opt/adapto</code>. Повторный запуск обновляет систему, настройки и данные остаются. Имя сервера можно задать сразу: <code>curl -fsSL https://adapto.kz/install.sh | sudo BOX_HOST=box.center.kz bash</code>.</p>
+    <p class="muted">Сборки с контрольными суммами лежат в открытом репозитории на <a href="https://github.com/AltynCore/adapto-os/releases">GitHub</a>. Для сервера без интернета там же есть пакет со всеми программами, включая Docker.</p>
   </section>
 
   <section class="section">
@@ -47,11 +49,12 @@
   </section>
 
   <section class="section">
-    <h2>Установка</h2>
+    <h2>Установка без интернета</h2>
     <ol class="steps">
       <li><div>
-        <h3>Распакуйте пакет и запустите установку</h3>
-<pre><code>tar -xf box-package-&lt;версия&gt;.tar
+        <h3>Скачайте пакет, перенесите на сервер и запустите установку</h3>
+        <p class="muted">Файл <code>adapto-os-&lt;версия&gt;.tar</code> — в релизах на <a href="https://github.com/AltynCore/adapto-os/releases">GitHub</a>.</p>
+<pre><code>tar -xf adapto-os-&lt;версия&gt;.tar
 cd box-package-&lt;версия&gt;
 sudo ./install.sh</code></pre>
         <p class="muted">Установщик создаёт файл настроек <code>.env</code> со случайными паролями и выводит пароль администратора на экран. На чистом сервере установка занимает около двух минут.</p>

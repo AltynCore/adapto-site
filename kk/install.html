@@ -27,8 +27,10 @@
 <main class="wrap">
   <section class="page-head">
     <h1>Орнату</h1>
-    <p class="lead">Adapto OS серверіңізге бір пакеттен орнатылады. Орнату үшін интернет қажет емес: пакетке барлық қажетті бағдарлама, соның ішінде Docker де кіреді.</p>
-    <p class="muted">Әр ұйымға орнату пакетін, лицензияны және бастапқы кодқа қол жеткізу мүмкіндігін береміз. Жаңартуларды да тікелей бізден аласыз. Пакетті сұрату: <a href="mailto:info@altyncore.kz">info@altyncore.kz</a>.</p>
+    <p class="lead">Adapto OS серверіңізге бір пәрменмен орнатылады:</p>
+    <pre><code>curl -fsSL https://adapto.kz/install.sh | sudo bash</code></pre>
+    <p class="muted">Пәрмен соңғы жинақты жүктеп алады, бақылау сомасын тексереді және жүйені <code>/opt/adapto</code> қалтасына орнатады. Қайта іске қосу жүйені жаңартады, баптаулар мен деректер сақталады. Сервер атауын бірден көрсетуге болады: <code>curl -fsSL https://adapto.kz/install.sh | sudo BOX_HOST=box.center.kz bash</code>.</p>
+    <p class="muted">Бақылау сомалары бар жинақтар <a href="https://github.com/AltynCore/adapto-os/releases">GitHub</a>-тағы ашық репозиторийде. Интернеті жоқ серверге арналған, Docker-ді қоса барлық бағдарламасы бар пакет те сонда.</p>
   </section>
 
   <section class="section">
@@ -47,11 +49,12 @@
   </section>
 
   <section class="section">
-    <h2>Орнату</h2>
+    <h2>Интернетсіз орнату</h2>
     <ol class="steps">
       <li><div>
-        <h3>Пакетті мұрағаттан шығарып, орнатуды іске қосыңыз</h3>
-<pre><code>tar -xf box-package-&lt;нұсқа&gt;.tar
+        <h3>Пакетті жүктеп, серверге көшіріп, орнатуды іске қосыңыз</h3>
+        <p class="muted"><code>adapto-os-&lt;нұсқа&gt;.tar</code> файлы — <a href="https://github.com/AltynCore/adapto-os/releases">GitHub</a>-тағы релиздерде.</p>
+<pre><code>tar -xf adapto-os-&lt;нұсқа&gt;.tar
 cd box-package-&lt;нұсқа&gt;
 sudo ./install.sh</code></pre>
         <p class="muted">Орнату бағдарламасы кездейсоқ құпиясөздері бар <code>.env</code> баптау файлын жасап, әкімшінің құпиясөзін экранға шығарады. Таза серверге орнату шамамен екі минутқа созылады.</p>

@@ -12,9 +12,12 @@
 
 ## Выкладка
 
-Хостинг ps.kz (Plesk, сервер `srv-plesk63.ps.kz`), папка сайта — `httpdocs` подписки `adapto.kz`. Там же лежит `SakenGPT_bot` — его не трогать; в домашней папке подписки ещё `altyncore.kz`.
+```
+bin/deploy
+```
 
-1. `git archive --format=zip -o adapto-site.zip HEAD -- '*.html' kk assets .htaccess`
-2. Plesk → Файлы → `httpdocs` → «Добавить новый» → «Загрузить файл».
-3. Архив → «Извлечь файлы» с «Заменить существующие файлы».
-4. Удалить `adapto-site.zip` из `httpdocs`: иначе его можно скачать.
+Скрипт берёт закоммиченный HEAD, заливает файлы сайта по FTPS в `httpdocs` на `srv-plesk63.ps.kz` и проверяет живые страницы. Пароль FTP — в связке ключей macOS, один раз: `security add-generic-password -s adapto-site-ftp -a adaptokz -w`. На сервере ничего не удаляется: в `httpdocs` ещё живёт `SakenGPT_bot`, а в домашней папке подписки — `altyncore.kz`.
+
+## Установка одной командой
+
+`install.sh` — установщик Adapto OS, сайт отдаёт его как `https://adapto.kz/install.sh`. Сборки лежат в релизах [AltynCore/adapto-os](https://github.com/AltynCore/adapto-os/releases), их публикует `deploy/release.sh` из `adapto-frappe`. Скрипт качает их через `adapto.kz/download/<метка>/…`: `.htaccess` отвечает редиректом 302 на GitHub, а метка из письма (`ADAPTO_KEY`) остаётся в журнале доступа — так видно, кто скачал.
