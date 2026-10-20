@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Установка — Adapto OS</title>
+<meta name="description" content="Требования к серверу, установка без интернета, обновления, резервные копии и восстановление Adapto OS.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="alternate" hreflang="kk" href="kk/install.html">
+</head>
+<body class="page">
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="assets/logo.svg" alt="" width="22" height="22">Adapto OS</a>
+    <nav class="site-nav" aria-label="Разделы сайта">
+      <a href="science.html">Научным центрам</a>
+      <a href="demo.html">Демо</a>
+      <a href="install.html" aria-current="page">Установка</a>
+      <a href="license.html">Лицензия</a>
+      <a href="services.html">Услуги и цены</a>
+      <a href="kk/install.html" lang="kk" hreflang="kk">Қазақша</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page-head">
+    <h1>Установка</h1>
+    <p class="lead">Adapto OS ставится на ваш сервер одним пакетом. Интернет для установки не нужен: внутри пакета все программы, включая Docker.</p>
+    <p class="muted">Пакет и доступ к исходному коду выдаём каждой организации напрямую. Так у вас своя лицензия, и обновления вы получаете от нас без посредников. Запросить пакет: <span class="todo">почта</span>.</p>
+  </section>
+
+  <section class="section">
+    <h2>Требования к серверу</h2>
+    <div class="table">
+      <table>
+        <thead><tr><th></th><th>Минимум</th><th>100 пользователей и больше</th></tr></thead>
+        <tbody>
+          <tr><td>Процессор</td><td>2 ядра x86_64</td><td>4 ядра</td></tr>
+          <tr><td>Память</td><td>4 ГБ</td><td>8 ГБ</td></tr>
+          <tr><td>Диск</td><td>30 ГБ</td><td>от 50 ГБ, зависит от вложений</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Система: Linux x86_64 с iptables или nftables, например Debian 12–13 или Ubuntu 22.04 и новее. Если Docker уже стоит, нужна версия 24 или новее с модулем Compose. В простое Adapto OS занимает около 0,5 ГБ памяти и около 4 ГБ на диске.</p>
+  </section>
+
+  <section class="section">
+    <h2>Установка</h2>
+    <ol class="steps">
+      <li><div>
+        <h3>Распаковать пакет и запустить установку</h3>
+<pre><code>tar -xf box-package-&lt;версия&gt;.tar
+cd box-package-&lt;версия&gt;
+sudo ./install.sh</code></pre>
+        <p class="muted">Установщик создаёт файл настроек <code>.env</code> со случайными паролями и выводит пароль администратора на экран. На чистом сервере установка занимает около двух минут.</p>
+      </div></li>
+      <li><div>
+        <h3>Указать адрес сервера</h3>
+        <p class="muted">В <code>.env</code>: <code>BOX_HOST</code> — имя, которое сотрудники набирают в браузере, <code>BOX_PORT</code> — порт, <code>BOX_URL</code> — полный адрес для ссылок в письмах. Затем снова <code>sudo ./install.sh</code>: он ничего не сотрёт, только применит настройки.</p>
+      </div></li>
+      <li><div>
+        <h3>Войти и завести сотрудников</h3>
+        <p class="muted">Первый вход — администратором. Дальше создайте сотрудников и выдайте им роли или подключите вход через AD/LDAP.</p>
+      </div></li>
+      <li><div>
+        <h3>Проверить установку</h3>
+<pre><code>sudo ./check.sh</code></pre>
+        <p class="muted">Скрипт проверяет службы, место на диске, последнюю ночную копию, планировщик задач и страницу входа. Если что-то не так, он об этом пишет; его вывод можно прислать нам вместе с вопросом.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section class="section">
+    <h2>Обслуживание</h2>
+    <dl class="rows">
+      <div><dt>Обновление</dt><dd>
+        <p>Новая версия выходит раз в квартал, поддерживаются две последние. Обновление — новым пакетом и одной командой <code>sudo ./update.sh</code>, перед обновлением она сама делает резервную копию. Ставить обновления не обязательно.</p>
+      </dd></div>
+      <div><dt>Резервные копии</dt><dd>
+        <p>Система каждую ночь копирует базу и вложения и хранит последние 7 копий. Эти копии лежат на том же диске, поэтому <code>backup.sh</code> уносит их в сетевую папку (NFS или SMB) и хранит там 14 последних.</p>
+      </dd></div>
+      <div><dt>Восстановление</dt><dd>
+<pre><code>sudo ./restore.sh backups/&lt;дата&gt;</code></pre>
+        <p>Подходит и ночная копия. Восстановить можно и на другом сервере — например, если старый вышел из строя.</p>
+      </dd></div>
+      <div><dt>Вход через AD/LDAP</dt><dd>
+        <p>Сотрудники входят доменной учётной записью, роли назначаются по доменным группам. Проверено на OpenLDAP; на Active Directory советуем сначала включить вход для одной учётной записи.</p>
+      </dd></div>
+      <div><dt>Почта</dt><dd>
+        <p>Уведомления уходят через ваш почтовый сервер. Письма на отдельный ящик могут сами становиться обращениями.</p>
+      </dd></div>
+      <div><dt>Перенос данных</dt><dd>
+        <p>Справочники и учётные данные загружаются из Excel или выгрузки 1С. Каждая строка проверяется так же, как при ручном вводе, ошибки видны в журнале импорта.</p>
+      </dd></div>
+    </dl>
+  </section>
+
+  <section class="section">
+    <h2>Что внутри</h2>
+    <p>Frappe Framework, PostgreSQL 18, Valkey и nginx в Docker-контейнерах. Исходный код Adapto OS открыт для вас: менять его можно самим или руками любого подрядчика. Компоненты третьих лиц и их лицензии перечислены на странице <a href="license.html#third-party">лицензии</a>.</p>
+    <div class="actions">
+      <a class="button" href="services.html">Поможем установить</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <div>ТОО «AltynCore»</div>
+      <div>БИН <span class="todo">указать</span> · <span class="todo">адрес</span> · <span class="todo">телефон и почта</span></div>
+    </div>
+    <nav aria-label="Документы">
+      <a href="license.html">Лицензия</a>
+      <a href="license.html#third-party">Сторонние компоненты</a>
+      <a href="kk/install.html" lang="kk" hreflang="kk">Қазақша</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

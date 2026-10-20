@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Орнату — Adapto OS</title>
+<meta name="description" content="Серверге қойылатын талаптар, интернетсіз орнату, жаңарту, резервтік көшірмелер және Adapto OS-ті қалпына келтіру.">
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="alternate" hreflang="ru" href="../install.html">
+</head>
+<body class="page">
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="../assets/logo.svg" alt="" width="22" height="22">Adapto OS</a>
+    <nav class="site-nav" aria-label="Сайт бөлімдері">
+      <a href="science.html">Ғылыми орталықтарға</a>
+      <a href="demo.html">Демо</a>
+      <a href="install.html" aria-current="page">Орнату</a>
+      <a href="license.html">Лицензия</a>
+      <a href="services.html">Қызметтер мен бағалар</a>
+      <a href="../install.html" lang="ru" hreflang="ru">Русский</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page-head">
+    <h1>Орнату</h1>
+    <p class="lead">Adapto OS сіздің серверіңізге бір пакетпен орнатылады. Орнатуға интернет керек емес: пакеттің ішінде барлық бағдарлама бар, Docker да бар.</p>
+    <p class="muted">Пакетті және бастапқы кодқа қолжетімділікті әр ұйымға тікелей береміз. Осылайша сіздің өз лицензияңыз болады, ал жаңартуларды бізден делдалсыз аласыз. Пакетті сұрату: <span class="todo">пошта</span>.</p>
+  </section>
+
+  <section class="section">
+    <h2>Серверге қойылатын талаптар</h2>
+    <div class="table">
+      <table>
+        <thead><tr><th></th><th>Ең аз</th><th>100 және одан көп пайдаланушы</th></tr></thead>
+        <tbody>
+          <tr><td>Процессор</td><td>2 ядро x86_64</td><td>4 ядро</td></tr>
+          <tr><td>Жад</td><td>4 ГБ</td><td>8 ГБ</td></tr>
+          <tr><td>Диск</td><td>30 ГБ</td><td>50 ГБ-тан бастап, тіркемелерге байланысты</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Жүйе: iptables немесе nftables бар Linux x86_64, мысалы Debian 12–13 немесе Ubuntu 22.04 және жаңарақ. Docker орнатылған болса, Compose модулі бар 24 немесе жаңарақ нұсқасы керек. Бос тұрғанда Adapto OS шамамен 0,5 ГБ жад және дискіде шамамен 4 ГБ орын алады.</p>
+  </section>
+
+  <section class="section">
+    <h2>Орнату</h2>
+    <ol class="steps">
+      <li><div>
+        <h3>Пакетті ашып, орнатуды іске қосу</h3>
+<pre><code>tar -xf box-package-&lt;нұсқа&gt;.tar
+cd box-package-&lt;нұсқа&gt;
+sudo ./install.sh</code></pre>
+        <p class="muted">Орнатушы кездейсоқ құпиясөздері бар <code>.env</code> баптаулар файлын жасайды және әкімші құпиясөзін экранға шығарады. Таза серверде орнату шамамен екі минут алады.</p>
+      </div></li>
+      <li><div>
+        <h3>Сервер мекенжайын көрсету</h3>
+        <p class="muted"><code>.env</code> файлында: <code>BOX_HOST</code> — қызметкерлер браузерде теретін атау, <code>BOX_PORT</code> — порт, <code>BOX_URL</code> — хаттардағы сілтемелер үшін толық мекенжай. Содан кейін қайтадан <code>sudo ./install.sh</code>: ол ештеңе өшірмейді, тек баптауларды қолданады.</p>
+      </div></li>
+      <li><div>
+        <h3>Кіріп, қызметкерлерді қосу</h3>
+        <p class="muted">Алғашқы кіру — әкімші ретінде. Одан кейін қызметкерлерді жасап, оларға рөлдер беріңіз немесе AD/LDAP арқылы кіруді қосыңыз.</p>
+      </div></li>
+      <li><div>
+        <h3>Орнатуды тексеру</h3>
+<pre><code>sudo ./check.sh</code></pre>
+        <p class="muted">Скрипт қызметтерді, дискідегі орынды, соңғы түнгі көшірмені, тапсырмалар жоспарлаушысын және кіру бетін тексереді. Бір нәрсе дұрыс болмаса, ол соны жазады; оның нәтижесін сұрағыңызбен бірге бізге жіберуге болады.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section class="section">
+    <h2>Қызмет көрсету</h2>
+    <dl class="rows">
+      <div><dt>Жаңарту</dt><dd>
+        <p>Жаңа нұсқа тоқсанына бір рет шығады, соңғы екеуі қолдау алады. Жаңарту — жаңа пакетпен және бір <code>sudo ./update.sh</code> командасымен, ол жаңарту алдында өзі резервтік көшірме жасайды. Жаңартуларды орнату міндетті емес.</p>
+      </dd></div>
+      <div><dt>Резервтік көшірмелер</dt><dd>
+        <p>Жүйе әр түні дерекқор мен тіркемелердің көшірмесін жасап, соңғы 7 көшірмені сақтайды. Бұл көшірмелер сол дискіде тұрады, сондықтан <code>backup.sh</code> оларды желілік қалтаға (NFS немесе SMB) апарып, онда соңғы 14-ін сақтайды.</p>
+      </dd></div>
+      <div><dt>Қалпына келтіру</dt><dd>
+<pre><code>sudo ./restore.sh backups/&lt;күні&gt;</code></pre>
+        <p>Түнгі көшірме де жарайды. Басқа серверде де қалпына келтіруге болады — мысалы, ескісі істен шықса.</p>
+      </dd></div>
+      <div><dt>AD/LDAP арқылы кіру</dt><dd>
+        <p>Қызметкерлер домендік есептік жазбасымен кіреді, рөлдер домендік топтар бойынша беріледі. OpenLDAP-та тексерілген; Active Directory-де алдымен бір есептік жазбаға кіруді қосуды ұсынамыз.</p>
+      </dd></div>
+      <div><dt>Пошта</dt><dd>
+        <p>Хабарламалар сіздің пошта серверіңіз арқылы жіберіледі. Бөлек жәшікке келген хаттар өздігінен өтінішке айнала алады.</p>
+      </dd></div>
+      <div><dt>Деректерді көшіру</dt><dd>
+        <p>Анықтамалықтар мен есеп деректері Excel-ден немесе 1С үзіндісінен жүктеледі. Әр жол қолмен енгізгендегідей тексеріледі, қателер импорт журналында көрінеді.</p>
+      </dd></div>
+    </dl>
+  </section>
+
+  <section class="section">
+    <h2>Ішінде не бар</h2>
+    <p>Docker контейнерлеріндегі Frappe Framework, PostgreSQL 18, Valkey және nginx. Adapto OS-тің бастапқы коды сізге ашық: оны өзіңіз немесе кез келген мердігердің көмегімен өзгертуге болады. Үшінші тарап компоненттері мен олардың лицензиялары <a href="license.html#third-party">лицензия</a> бетінде келтірілген.</p>
+    <div class="actions">
+      <a class="button" href="services.html">Орнатуға көмектесеміз</a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <div>«AltynCore» ЖШС</div>
+      <div>БСН <span class="todo">көрсету</span> · <span class="todo">мекенжай</span> · <span class="todo">телефон және пошта</span></div>
+    </div>
+    <nav aria-label="Құжаттар">
+      <a href="license.html">Лицензия</a>
+      <a href="license.html#third-party">Үшінші тарап компоненттері</a>
+      <a href="../install.html" lang="ru" hreflang="ru">Русский</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>
