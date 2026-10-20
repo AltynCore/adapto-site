@@ -1,52 +1,49 @@
 #!/usr/bin/env bash
-# Uploads the committed site to adapto.kz over FTPS and checks the live pages.
+# Publishes the committed site to adapto.kz and checks the live pages.
 #   bin/deploy
-# The FTP password comes from the macOS keychain, saved once by the owner:
-#   security add-generic-password -s adapto-site-ftp -a adaptokz -w
-# Only the site's own files are sent; nothing on the server is deleted (httpdocs also holds SakenGPT_bot).
-# A page removed from the repository stays on the server until it is deleted in Plesk.
+# How it works: push to github.com/AltynCore/adapto-site, then the Plesk Git webhook makes the
+# server pull main and check it out into httpdocs. Plesk only writes the repository's files:
+# what else lives in httpdocs (SakenGPT_bot) stays. The webhook address (with its uuid) is in the
+# macOS keychain, item adapto-site-deploy-hook; it is in Plesk: adapto.kz → Git → repository settings.
+#   SITE=https://adapto.kz/_deploy_test bin/deploy    checks another deploy folder
 set -euo pipefail
 cd "$(dirname "$0")/.."
-
-HOST=srv-plesk63.ps.kz
-USER_NAME=adaptokz
-TARGET=httpdocs
-SITE=https://adapto.kz
+SITE=${SITE:-https://adapto.kz}
 
 [ -z "$(git status --porcelain)" ] || { echo "Uncommitted changes: commit first, the deploy sends HEAD." >&2; exit 1; }
-password=$(security find-generic-password -s adapto-site-ftp -a "$USER_NAME" -w 2>/dev/null) || {
-  echo "No FTP password in the keychain. Save it once:" >&2
-  echo "  security add-generic-password -s adapto-site-ftp -a $USER_NAME -w" >&2
+hook=$(security find-generic-password -s adapto-site-deploy-hook -a adapto.kz -w 2>/dev/null) || {
+  echo "No Plesk webhook in the keychain. Copy it from Plesk (adapto.kz → Git → repository settings) and save:" >&2
+  echo "  security add-generic-password -U -s adapto-site-deploy-hook -a adapto.kz -w '<webhook url>'" >&2
   exit 1
 }
 
-work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
-netrc=$work/netrc
-( umask 077; printf 'machine %s login %s password %s\n' "$HOST" "$USER_NAME" "$password" > "$netrc" )
-unset password
-mkdir "$work/site"
-git archive HEAD -- '*.html' kk assets .htaccess install.sh | tar -x -C "$work/site"
+git push -q origin HEAD:main
+curl -fsS -o /dev/null -X POST "$hook"
+echo "Pushed $(git rev-parse --short HEAD), Plesk is deploying"
 
-cd "$work/site"
-count=0
-while IFS= read -r file; do
-  curl -sS --ssl-reqd --netrc-file "$netrc" --ftp-create-dirs -T "$file" "ftp://$HOST/$TARGET/$file"
-  count=$((count + 1))
-done < <(find . -type f | sed 's|^\./||' | sort)
-echo "Uploaded $count files to $HOST:$TARGET"
-
-# Every page and every file it links to answers 200; install.sh on the site is the committed one.
-failed=0
-check() {
-  local code
-  code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE$1")
-  [ "$code" = 200 ] || { echo "  $1 -> $code" >&2; failed=1; }
+# Done when every page and text file on the site is byte for byte the committed one.
+url_of() { case "$1" in index.html) echo /;; kk/index.html) echo /kk/;; *.html) echo "/${1%.html}";; *) echo "/$1";; esac; }
+mismatched() {
+  local file
+  for file in $(git ls-files '*.html' 'kk/*.html' install.sh assets/site.css); do
+    [ "$(curl -s "$SITE$(url_of "$file")?v=$RANDOM" | shasum -a 256 | cut -d' ' -f1)" = "$(git show "HEAD:$file" | shasum -a 256 | cut -d' ' -f1)" ] \
+      || echo "$file"
+  done
 }
-for page in / /science /demo /install /license /services /kk/ /kk/science /kk/demo /kk/install /kk/license /kk/services \
-            /assets/site.css /assets/inter.woff2 /assets/overview.png /assets/logo.svg; do
-  check "$page"
+for _ in $(seq 1 30); do
+  left=$(mismatched)
+  [ -z "$left" ] && break
+  sleep 2
 done
-[ "$(curl -s "$SITE/install.sh" | shasum -a 256 | cut -d' ' -f1)" = "$(shasum -a 256 install.sh | cut -d' ' -f1)" ] \
-  || { echo "  /install.sh differs from the committed one" >&2; failed=1; }
-[ "$failed" = 0 ] && echo "Live check: all pages answer, install.sh matches" || { echo "Live check failed" >&2; exit 1; }
+
+failed=0
+[ -z "$left" ] || { echo "  not the committed version on the site: $(echo $left)" >&2; failed=1; }
+for path in /assets/inter.woff2 /assets/overview.png /assets/logo.svg /download/site/latest; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE$path")
+  case "$code" in 200|302) ;; *) echo "  $path -> $code" >&2; failed=1;; esac
+done
+for hidden in /README.md /bin/deploy /zettel/; do
+  code=$(curl -s -o /dev/null -w '%{http_code}' "$SITE$hidden")
+  [ "$code" = 404 ] || { echo "  $hidden -> $code, must be 404" >&2; failed=1; }
+done
+[ "$failed" = 0 ] && echo "Live check passed: $SITE serves $(git rev-parse --short HEAD)" || { echo "Live check failed" >&2; exit 1; }
